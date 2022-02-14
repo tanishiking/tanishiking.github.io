@@ -1,0 +1,198 @@
+<!doctype html><html lang=en dir=auto>
+<head><meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=robots content="index, follow">
+<title>Count unicode characters in JavaScript | Rikito Taniguchi</title>
+<meta name=keywords content="javascript">
+<meta name=description content="There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017.">
+<meta name=author content="Rikito Taniguchi">
+<link rel=canonical href=https://tanishiking.github.io/posts/count-unicode-codepoint/>
+<link crossorigin=anonymous href=/assets/css/stylesheet.min.c88963fe2d79462000fd0fb1b3737783c32855d340583e4523343f8735c787f0.css integrity="sha256-yIlj/i15RiAA/Q+xs3N3g8MoVdNAWD5FIzQ/hzXHh/A=" rel="preload stylesheet" as=style>
+<script defer crossorigin=anonymous src=/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5+kdJvBz5iKbt6B5PJI=" onload=hljs.initHighlightingOnLoad()></script>
+<link rel=icon href=https://tanishiking.github.io/favicon.ico>
+<link rel=icon type=image/png sizes=16x16 href=https://tanishiking.github.io/favicon-16x16.png>
+<link rel=icon type=image/png sizes=32x32 href=https://tanishiking.github.io/favicon-32x32.png>
+<link rel=apple-touch-icon href=https://tanishiking.github.io/apple-touch-icon.png>
+<link rel=mask-icon href=https://tanishiking.github.io/safari-pinned-tab.svg>
+<meta name=theme-color content="#2e2e33">
+<meta name=msapplication-TileColor content="#2e2e33">
+<meta name=generator content="Hugo 0.92.2">
+<noscript>
+<style>#theme-toggle,.top-link{display:none}</style>
+</noscript><meta property="og:title" content="Count unicode characters in JavaScript">
+<meta property="og:description" content="There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tanishiking.github.io/posts/count-unicode-codepoint/"><meta property="article:section" content="posts">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Count unicode characters in JavaScript">
+<meta name=twitter:description content="There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017.">
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://tanishiking.github.io/posts/"},{"@type":"ListItem","position":2,"name":"Count unicode characters in JavaScript","item":"https://tanishiking.github.io/posts/count-unicode-codepoint/"}]}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Count unicode characters in JavaScript","name":"Count unicode characters in JavaScript","description":"There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017.","keywords":["javascript"],"articleBody":"There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017. I’ve done some research, and I’ll summarize it for you.\nUnicode Code Points In Unicode, all characters are assigned an ID (code point) (0 to 0x10FFFF). The code point is written as U+hexdecimal.\nIn UTF-16, code points from U+0000 to U+FFFF are represented by a single 16-bit code unit, and code points after U+10000 (e.g., the code point for 𩸽 (Arabesque Sea in Japanese)) are represented by surrogate pairs as described below because they cannot be represented by 16 bits alone.\nSurrogate Pairs In UTF-16, some characters (corresponding to code points after U+10000) are represented by 32 bits (16 bits x 2) in order to represent code points that cannot be represented by 16 bits alone. These characters (or expressions?) are called surrogate pairs.\nSurrogate Code Point The range of 16-bit values that make up a surrogate pair is from U+D800 to U+DFFF, and these are called surrogate code points (no characters are assigned to these surrogate code points).\nIn addition\n U+D800 ~ U+DBFF are called upper surrogate. U+DC00 ~ U+DFFF are called lower surrogates.  A surrogate pair is represented by the combination of the upper and lower surrogates.\n.length property JavaScript’s str.length does not return the length of the string in Unicode code points, but in UTF-16 code units.\nFor example, “𩸽” is a surrogate pair, so the length will be 2.\n\"𩸽\".length; // 2 We want to count surrogate pairs such as “𩸽” as 1.\nHow to check the length of each code point for of ES2015 added for ... of... and it can be used to repeat code point by code point.\nfor (let c of '𩸽定食') console.log(c) // 𩸽 // 定 // 食 But currently (May 2017) unsupported by IE11 https://kangax.github.io/compat-table/es6/#test-for..of_loops\nSpread operator The split assignment also seems to be code point aware. If you use the spread operator, you can quickly transform a string into an array by code points.\n[...'𩸽定食'] // ['𩸽', '定', '食'] But currently (May 2017) unsupported by IE11 https://kangax.github.io/compat-table/es6/#test-spread(…)operator\nRegExp unicode flag Starting with ES2015, the unicode flag has been introduced, which treats patterns as a sequence of code points.\n'𩸽定食'.match(/./ug); // ['𩸽', '定', '食'] Again, IE11 doesn’t support it https://kangax.github.io/compat-table/es6/#test-RegExp_y_and_u_flags\nWork hard with for statements. Loop through the string in 16-bit units, counting surrogate pairs as 1.\nfunction stringLength(str) { let count = 0; for (let i = 0; i  str.length; i++) { count++; // obtain the i-th 16-bit  const code = str.charCodeAt(i); if (0xD800  code \u0026\u0026 code  0xDBFF) { // if the i-th 16bit is an upper surrogate  // skip the next 16 bits (lower surrogate)  i++; } } return count; } Obviously it works with IE11 🎉\nRegular Expressions (Unicode Sequence) Idea is to convert surrogate pairs to non-surrogate pair characters first and then take length\nfunction stringLength(str) { // Replace surrogate pair with _  return str.replace(/[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]/g, '_').length; } stringLength('𩸽定食'); // 3 If you want to convert it to an array\nfunction stringToArray(str) { return str.match(/[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[^\\uD800-\\uDFFF]/g) || []; } stringToArray('𩸽定食'); // ['𩸽', '定', '食'] Conclusion That’s all, maybe we should drop IE11 support.\n","wordCount":"547","inLanguage":"en","datePublished":"0001-01-01T00:00:00Z","dateModified":"0001-01-01T00:00:00Z","author":{"@type":"Person","name":"Rikito Taniguchi"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tanishiking.github.io/posts/count-unicode-codepoint/"},"publisher":{"@type":"Organization","name":"Rikito Taniguchi","logo":{"@type":"ImageObject","url":"https://tanishiking.github.io/favicon.ico"}}}</script>
+</head>
+<body id=top>
+<script>localStorage.getItem("pref-theme")==="dark"&&document.body.classList.add('dark')</script>
+<header class=header>
+<nav class=nav>
+<div class=logo>
+<a href=https://tanishiking.github.io/ accesskey=h title="Rikito Taniguchi (Alt + H)">Rikito Taniguchi</a>
+<span class=logo-switches>
+<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+</span>
+</div>
+<ul id=menu>
+<li>
+<a href=https://tanishiking.github.io/cv/ title=CV>
+<span>CV</span>
+</a>
+</li>
+<li>
+<a href=https://tanishiking.github.io/tags/ title=Tags>
+<span>Tags</span>
+</a>
+</li>
+</ul>
+</nav>
+</header>
+<main class=main>
+<article class=post-single>
+<header class=post-header>
+<div class=breadcrumbs><a href=https://tanishiking.github.io/>Home</a>&nbsp;»&nbsp;<a href=https://tanishiking.github.io/posts/>Posts</a></div>
+<h1 class=post-title>
+Count unicode characters in JavaScript
+</h1>
+<div class=post-description>
+There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017.
+</div>
+<div class=post-meta>Rikito Taniguchi
+</div>
+</header> <div class=toc>
+<details>
+<summary accesskey=c title="(Alt + C)">
+<span class=details>Table of Contents</span>
+</summary>
+<div class=inner><ul>
+<li>
+<a href=#unicode-code-points aria-label="Unicode Code Points">Unicode Code Points</a></li>
+<li>
+<a href=#surrogate-pairs aria-label="Surrogate Pairs">Surrogate Pairs</a><ul>
+<li>
+<a href=#surrogate-code-point aria-label="Surrogate Code Point">Surrogate Code Point</a></li></ul>
+</li>
+<li>
+<a href=#length-property aria-label=".length property"><code>.length</code> property</a></li>
+<li>
+<a href=#how-to-check-the-length-of-each-code-point aria-label="How to check the length of each code point">How to check the length of each code point</a><ul>
+<li>
+<a href=#for-of aria-label="for of">for of</a></li>
+<li>
+<a href=#spread-operator aria-label="Spread operator">Spread operator</a></li>
+<li>
+<a href=#regexp-unicode-flag aria-label="RegExp unicode flag">RegExp unicode flag</a></li>
+<li>
+<a href=#work-hard-with-for-statements aria-label="Work hard with for statements.">Work hard with for statements.</a></li>
+<li>
+<a href=#regular-expressions-unicode-sequence aria-label="Regular Expressions (Unicode Sequence)">Regular Expressions (Unicode Sequence)</a></li></ul>
+</li>
+<li>
+<a href=#conclusion aria-label=Conclusion>Conclusion</a>
+</li>
+</ul>
+</div>
+</details>
+</div>
+<div class=post-content><p>There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017. I&rsquo;ve done some research, and I&rsquo;ll summarize it for you.</p>
+<h2 id=unicode-code-points>Unicode Code Points<a hidden class=anchor aria-hidden=true href=#unicode-code-points>#</a></h2>
+<p>In Unicode, all characters are assigned an ID (code point) (<code>0</code> to <code>0x10FFFF</code>). The code point is written as <code>U+hexdecimal</code>.</p>
+<p>In UTF-16, code points from <code>U+0000</code> to <code>U+FFFF</code> are represented by a single 16-bit code unit, and code points after <code>U+10000</code> (e.g., the code point for <code>𩸽</code> (Arabesque Sea in Japanese)) are represented by <code>surrogate pairs</code> as described below because they cannot be represented by 16 bits alone.</p>
+<h2 id=surrogate-pairs>Surrogate Pairs<a hidden class=anchor aria-hidden=true href=#surrogate-pairs>#</a></h2>
+<p>In UTF-16, some characters (corresponding to code points after <code>U+10000</code>) are represented by 32 bits (16 bits x 2) in order to represent code points that cannot be represented by 16 bits alone. These characters (or expressions?) are called <code>surrogate pairs</code>.</p>
+<h3 id=surrogate-code-point>Surrogate Code Point<a hidden class=anchor aria-hidden=true href=#surrogate-code-point>#</a></h3>
+<p>The range of 16-bit values that make up a surrogate pair is from <code>U+D800</code> to <code>U+DFFF</code>, and these are called <code>surrogate code points</code> (no characters are assigned to these surrogate code points).</p>
+<p>In addition</p>
+<ul>
+<li><code>U+D800 ~ U+DBFF</code> are called <code>upper surrogate</code>.</li>
+<li><code>U+DC00 ~ U+DFFF</code> are called <code>lower surrogates</code>.</li>
+</ul>
+<p>A surrogate pair is represented by the combination of the upper and lower surrogates.</p>
+<h2 id=length-property><code>.length</code> property<a hidden class=anchor aria-hidden=true href=#length-property>#</a></h2>
+<p>JavaScript&rsquo;s <code>str.length</code> does not return the length of the string in Unicode code points, but in UTF-16 code units.</p>
+<p>For example, &ldquo;𩸽&rdquo; is a surrogate pair, so the length will be 2.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#e6db74>&#34;𩸽&#34;</span>.<span style=color:#a6e22e>length</span>; <span style=color:#75715e>// 2
+</span></code></pre></div><p>We want to count surrogate pairs such as &ldquo;𩸽&rdquo; as 1.</p>
+<h2 id=how-to-check-the-length-of-each-code-point>How to check the length of each code point<a hidden class=anchor aria-hidden=true href=#how-to-check-the-length-of-each-code-point>#</a></h2>
+<h3 id=for-of>for of<a hidden class=anchor aria-hidden=true href=#for-of>#</a></h3>
+<p>ES2015 added <code>for ... of...</code> and it can be used to repeat code point by code point.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>c</span> <span style=color:#66d9ef>of</span> <span style=color:#e6db74>&#39;𩸽定食&#39;</span>) <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>c</span>)
+<span style=color:#75715e>// 𩸽
+</span><span style=color:#75715e>// 定
+</span><span style=color:#75715e>// 食
+</span></code></pre></div><p>But currently (May 2017) unsupported by IE11 <a href=https://kangax.github.io/compat-table/es6/#test-for..of_loops>https://kangax.github.io/compat-table/es6/#test-for..of_loops</a></p>
+<h3 id=spread-operator>Spread operator<a hidden class=anchor aria-hidden=true href=#spread-operator>#</a></h3>
+<p>The split assignment also seems to be code point aware. If you use the spread operator, you can quickly transform a string into an array by code points.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript>[...<span style=color:#e6db74>&#39;𩸽定食&#39;</span>]
+<span style=color:#75715e>// [&#39;𩸽&#39;, &#39;定&#39;, &#39;食&#39;]
+</span></code></pre></div><p>But currently (May 2017) unsupported by IE11 <a href=https://kangax.github.io/compat-table/es6/#test-spread(>https://kangax.github.io/compat-table/es6/#test-spread(</a>…)operator</p>
+<h3 id=regexp-unicode-flag>RegExp unicode flag<a hidden class=anchor aria-hidden=true href=#regexp-unicode-flag>#</a></h3>
+<p>Starting with ES2015, the unicode flag has been introduced, which treats patterns as a sequence of code points.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#e6db74>&#39;𩸽定食&#39;</span>.<span style=color:#a6e22e>match</span>(<span style=color:#e6db74>/./ug</span>);
+<span style=color:#75715e>// [&#39;𩸽&#39;, &#39;定&#39;, &#39;食&#39;]
+</span></code></pre></div><p>Again, IE11 doesn&rsquo;t support it <a href=https://kangax.github.io/compat-table/es6/#test-RegExp_y_and_u_flags>https://kangax.github.io/compat-table/es6/#test-RegExp_y_and_u_flags</a></p>
+<h3 id=work-hard-with-for-statements>Work hard with for statements.<a hidden class=anchor aria-hidden=true href=#work-hard-with-for-statements>#</a></h3>
+<p>Loop through the string in 16-bit units, counting surrogate pairs as 1.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>stringLength</span>(<span style=color:#a6e22e>str</span>) {
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>count</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#a6e22e>str</span>.<span style=color:#a6e22e>length</span>; <span style=color:#a6e22e>i</span><span style=color:#f92672>++</span>) {
+    <span style=color:#a6e22e>count</span><span style=color:#f92672>++</span>;
+    <span style=color:#75715e>// obtain the i-th 16-bit
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>code</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>str</span>.<span style=color:#a6e22e>charCodeAt</span>(<span style=color:#a6e22e>i</span>);
+    <span style=color:#66d9ef>if</span> (<span style=color:#ae81ff>0xD800</span> <span style=color:#f92672>&lt;=</span> <span style=color:#a6e22e>code</span> <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>code</span> <span style=color:#f92672>&lt;=</span> <span style=color:#ae81ff>0xDBFF</span>) {
+      <span style=color:#75715e>// if the i-th 16bit is an upper surrogate
+</span><span style=color:#75715e></span>      <span style=color:#75715e>// skip the next 16 bits (lower surrogate)
+</span><span style=color:#75715e></span>      <span style=color:#a6e22e>i</span><span style=color:#f92672>++</span>;
+    }
+  }
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>count</span>;
+}
+</code></pre></div><p>Obviously it works with IE11 🎉</p>
+<h3 id=regular-expressions-unicode-sequence>Regular Expressions (Unicode Sequence)<a hidden class=anchor aria-hidden=true href=#regular-expressions-unicode-sequence>#</a></h3>
+<p>Idea is to convert surrogate pairs to non-surrogate pair characters first and then take length</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>stringLength</span>(<span style=color:#a6e22e>str</span>) {
+  <span style=color:#75715e>// Replace surrogate pair with _
+</span><span style=color:#75715e></span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>str</span>.<span style=color:#a6e22e>replace</span>(<span style=color:#e6db74>/[\uD800-\uDBFF][\uDC00-\uDFFF]/g</span>, <span style=color:#e6db74>&#39;_&#39;</span>).<span style=color:#a6e22e>length</span>;
+}
+
+<span style=color:#a6e22e>stringLength</span>(<span style=color:#e6db74>&#39;𩸽定食&#39;</span>); <span style=color:#75715e>// 3
+</span></code></pre></div><p>If you want to convert it to an array</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>stringToArray</span>(<span style=color:#a6e22e>str</span>) {
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>str</span>.<span style=color:#a6e22e>match</span>(<span style=color:#e6db74>/[\uD800-\uDBFF][\uDC00-\uDFFF]|[^\uD800-\uDFFF]/g</span>) <span style=color:#f92672>||</span> [];
+}
+
+<span style=color:#a6e22e>stringToArray</span>(<span style=color:#e6db74>&#39;𩸽定食&#39;</span>);
+<span style=color:#75715e>// [&#39;𩸽&#39;, &#39;定&#39;, &#39;食&#39;]
+</span></code></pre></div><h2 id=conclusion>Conclusion<a hidden class=anchor aria-hidden=true href=#conclusion>#</a></h2>
+<p>That&rsquo;s all, maybe we should drop IE11 support.</p>
+</div>
+<footer class=post-footer>
+<ul class=post-tags>
+<li><a href=https://tanishiking.github.io/tags/javascript/>javascript</a></li>
+</ul>
+</footer>
+</article>
+</main>
+<footer class=footer>
+<span>&copy; 2022 <a href=https://tanishiking.github.io/>Rikito Taniguchi</a></span>
+<span>
+Powered by
+<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
+        <a href=https://git.io/hugopapermod rel=noopener target=_blank>PaperMod</a>
+</span>
+</footer>
+<a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</a>
+<script>let menu=document.getElementById('menu');menu&&(menu.scrollLeft=localStorage.getItem("menu-scroll-position"),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}),document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})})</script>
+<script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script>
+<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
+</body>
+</html>
