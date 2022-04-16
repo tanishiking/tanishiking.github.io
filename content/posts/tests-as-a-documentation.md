@@ -7,7 +7,7 @@ tags = []
 title = "Tests as a Documentation"
 
 +++
-While the design of production code is often discussed, "how unit tests should be written" is less discussed. I think it is often treated lightly as if it is good if the coverage is high anyway.
+Developers often talk about the software design architecture,  While the architecture design of production code is often discussed, "how unit tests should be written" is less discussed. It is often treated lightly as if it is good if the coverage is high anyway.
 
 As a result, tests are added/extended in a "bad" way when writing tests and **especially when adding tests**, making them hard to maintain, fragile**,** and (even by future selves) difficult to read, hard to understand what is being verified.
 
