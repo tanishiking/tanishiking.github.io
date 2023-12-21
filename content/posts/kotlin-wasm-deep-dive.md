@@ -10,7 +10,11 @@ tags:
 In this article, I'm examining the generated WAT (WebAssembly Text) files from `Kotlin/Wasm` and investigating how high-level constructs in Kotlin map to WasmGC.
 
 ## Generating WAT from Kotlin/Wasm
-I'm working with the `kotlin-wasm-example/nodejs-example` and inspecting the output. The version at the time of writing is Kotlin 1.9.20.
+
+https://github.com/Kotlin/kotlin-wasm-examples
+
+I'll work with the `kotlin-wasm-example/nodejs-example` and inspecting the output. The version at the time of writing is Kotlin 1.9.20.
+
 To generate WAT files, I'm passing the `-Xwasm-generate-wat` flag to the compiler[^flags].
 
 
