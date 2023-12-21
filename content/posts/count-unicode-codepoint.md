@@ -1,7 +1,7 @@
 ---
 title: 'Count unicode characters in JavaScript'
 description: 'There are several ways to count strings in JS in Unicode Code Point units instead of 16-bit units, but in the end, I wonder which method works in most environments (including legacy browsers like IE11) as of May 2017.'
-publishDate: 'May 29, 2017'
+publishDate: 2017-05-29
 author: 'Rikito Taniguchi'
 tags:
   - javascript

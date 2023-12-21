@@ -1,7 +1,7 @@
 ---
 title: 'IME event handling in JavaScript cross-browser (2017)'
 description: 'In 2017, when CompositionEvent is supported by many major browsers, I thought it would be easy to implement a small input completion function that supports Japanese input in JavaScript, but the details of the implementation differed depending on the browser...'
-publishDate: 'Dec 12, 2017'
+publishDate: 2017-12-12
 author: 'Rikito Taniguchi'
 tags:
   - javascript
