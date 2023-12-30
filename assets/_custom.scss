@@ -1,3 +1,15 @@
-body > main > div > article > p {
-    display: none;
+.book-post {
+    margin-bottom: 1rem;
+}
+
+.markdown h1, .markdown h2, .markdown h3, .markdown h4{
+    margin-bottom: 0.5rem;
+}
+
+.markdown h5, .markdown h6 {
+    margin: 0rem;
+}
+
+.markdown a:visited {
+    color: var(--color-link);
 }

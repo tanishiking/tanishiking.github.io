@@ -10,4 +10,3 @@ title = "Rikito Taniguchi"
 [params]
   BookSearch = false
   BookTheme = 'auto'
-  BookSection = '*'

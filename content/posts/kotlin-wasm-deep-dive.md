@@ -69,7 +69,7 @@ fun box() {
 }
 ```
 
-```wasm
+```lisp
 (type $____type_3 (func (param)))
 (func $box___fun_62 (type $____type_3)
     i32.const 1
@@ -107,7 +107,7 @@ fun box() {
 
 First, the `Person` class is represented with a struct.
 
-```wasm
+```lisp
 (type $Foo___type_36 (sub $kotlin.Any___type_13 (struct
   (field (ref $Foo.vtable___type_26))
   (field (ref null struct))
@@ -121,7 +121,7 @@ First, the `Person` class is represented with a struct.
 `$Foo___type_36` is a subtype of `kotlin.Any___type_13`, and `Any` has the following data structure:
 
 
-```wasm
+```lisp
 (type $kotlin.Any___type_13 (struct
     (field (ref $kotlin.Any.vtable___type_12)) ;; vtable
     (field (ref null struct)) ;; itable
@@ -139,7 +139,7 @@ Next, let's look at the implementation of `box` and how `Foo` is initialized.
 [^dispatch]: see https://lukasatkinson.de/2016/dynamic-vs-static-dispatch/ and https://lukasatkinson.de/2018/interface-dispatch/
 
 
-```wasm
+```lisp
 (func $box___fun_62 (type $____type_3)
     (local $0_foo (ref null $Foo___type_36))
     ref.null none
@@ -158,7 +158,7 @@ Next, let's look at the implementation of `box` and how `Foo` is initialized.
 Ok, then, what does `$Foo.<init>___fun_61` do?
 
 
-```wasm
+```lisp
 (func $Foo.<init>___fun_61 (type $____type_88)
     (param $0_<this> (ref null $Foo___type_36))
     (param $1_bar i32) (result (ref null $Foo___type_36))
@@ -217,7 +217,7 @@ fun bar(f: Base) = f.foo()
 Base type:
 
 
-```wasm
+```lisp
 ;; type definition
 (type $Base___type_36 (sub $kotlin.Any___type_13 (struct
     (field (ref $Base.vtable___type_26)) (field (ref null struct)) (field (mut i32)) (field (mut i32)))))
@@ -242,7 +242,7 @@ Base type:
 Derived:
 
 
-```wasm
+```lisp
 ;; type definition
 ;; Same as Base___type_36 except super class is Base___type_36 and vtable is Derived.vtable
 (type $Derived___type_42 (sub $Base___type_36 (struct
@@ -267,7 +267,7 @@ Since `foo` is overridden, a function reference to `Derived.foo` is registered i
 The `box` function looks like this.
 
 
-```wasm
+```lisp
 (func $box___fun_65 (type $____type_3)
     (local $0_d (ref null $Derived___type_42))
     ref.null none
@@ -281,7 +281,7 @@ The `box` function looks like this.
 - `$bar___fun_66` with Derived instance.
 
 
-```wasm
+```lisp
 (type $____type_92 (func (param (ref null $Base___type_36))))
 (func $bar___fun_66 (type $____type_92)
     (param $0_f (ref null $Base___type_36)) (result i32)
@@ -334,7 +334,7 @@ fun baz(b: Base) = b.foo() + b.bar()
 Starts with `box___fun`
 
 
-```wasm
+```lisp
 (func $box___fun_64 (type $____type_3)
     (local $0_d (ref null $Derived___type_40))
     ref.null none
@@ -346,7 +346,7 @@ Starts with `box___fun`
 
 Just `call $Derived.<init>` and call `call $baz___fun_65`. We will look at `Derived.<init>`.
 
-```wasm
+```lisp
 (type $Derived___type_40 (sub $kotlin.Any___type_16 (struct
     (field (ref $Derived.vtable___type_30))
     (field (ref null struct))
@@ -378,7 +378,7 @@ Just `call $Derived.<init>` and call `call $baz___fun_65`. We will look at `Deri
 
 We can see that `global.get Derived.classITable___g_27` sets the itable. What is this?
 
-```wasm
+```lisp
 ;; instance of itable
 (global $Derived.classITable___g_27 (ref $classITable___type_20)
     ref.func $Derived.foo___fun_62
@@ -407,7 +407,7 @@ We can see that `global.get Derived.classITable___g_27` sets the itable. What is
 Then we'll look at the implementation on the caller side (`baz`).
 
 
-```wasm
+```lisp
 (func $baz___fun_65 (type $____type_55)
     (param $0_b (ref null $kotlin.Any___type_16)) (result i32)
     local.get $0_b  ;; type: <root>.Base
@@ -448,7 +448,7 @@ fun box() {
 Maybe in the process of lowering to KotlinIR, varargs are converted to Arrays.
 
 
-```wasm
+```lisp
 (type $____type_54 (func (param (ref null $kotlin.IntArray___type_31)) (result i32)))
 (func $sum___fun_65 (type $____type_54)
     (param $0_xs (ref null $kotlin.IntArray___type_31)) (result i32)
@@ -460,7 +460,7 @@ Maybe in the process of lowering to KotlinIR, varargs are converted to Arrays.
 Definition of IntArray
 
 
-```wasm
+```lisp
 (type $kotlin.wasm.internal.WasmIntArray___type_15 (array (mut i32)))
 (type $kotlin.IntArray___type_31 (sub $kotlin.Any___type_13 (struct
     (field (ref $kotlin.IntArray.vtable___type_21))
@@ -473,7 +473,7 @@ Definition of IntArray
 caller side
 
 
-```wasm
+```lisp
 (func $box___fun_66 (type $____type_3)
     
     ;; Any parameters
@@ -509,7 +509,7 @@ fun box() {
 }
 ```
 
-```wasm
+```lisp
 (func $box___fun_63 (type $____type_3)
     
     ;; vtable, itable, typeinfo, hashcode given to kotlin.Int___type_40
@@ -556,7 +556,7 @@ fun box() {
 The type definition of `Box` is. `Any` instead of `T`.
 
 
-```wasm
+```lisp
 (type $Box___type_38 (sub $kotlin.Any___type_13 (struct
     (field (ref $Box.vtable___type_27))
     (field (ref null struct))
@@ -568,7 +568,7 @@ The type definition of `Box` is. `Any` instead of `T`.
 
 This is how the `Box` is instantiated and the fields accessed.
 
-```wasm
+```lisp
 (func $box___fun_63 (type $____type_3)
     (local $0_b (ref null $Box___type_38))
     ref.null none
@@ -611,7 +611,7 @@ fun bar(k: Kind) =
     }
 ```
 
-```wasm
+```lisp
 (type $Kind___type_44 (sub $kotlin.Enum___type_32 (struct
     (field (ref $Kind.vtable___type_41)) ;; vtable
     (field (ref null struct)) ;; itable
@@ -624,7 +624,7 @@ fun bar(k: Kind) =
 
 Looking at the box function, the wasm expression for `Kind.A` is a call to something called `$Kind_A_getInstance___fun_80`.
 
-```wasm
+```lisp
 (func $box___fun_78 (type $____type_3)
     call $Kind_A_getInstance___fun_80
     call $bar___fun_79
@@ -634,7 +634,7 @@ Looking at the box function, the wasm expression for `Kind.A` is a call to somet
 This is a function that calls the function `$Kind_initEntries___fun_76` and then returns an instance of `Kind.A` defined as global
 
 
-```wasm
+```lisp
 (func $Kind_A_getInstance___fun_80 (type $____type_103) (result (ref null $Kind___type_44))
     call $Kind_initEntries___fun_76
     global.get $Kind_A_instance___g_8  ;; type: <root>.Kind?
@@ -643,7 +643,7 @@ This is a function that calls the function `$Kind_initEntries___fun_76` and then
 
 `$Kind_initEntries___fun_76`, as the name implies, creates instances of `Kind.A` and `Kind.B` and `global.set`.
 
-```wasm
+```lisp
 (func $Kind_initEntries___fun_76 (type $____type_3)
     ;; Initialisation checks to avoid multiple runs (omitted).
     ;; ...
@@ -668,7 +668,7 @@ This is a function that calls the function `$Kind_initEntries___fun_76` and then
 Now we will look at the pattern matching part.
 
 
-```wasm
+```lisp
 (func $bar___fun_79 (type $____type_102)
     (param $0_k (ref null $Kind___type_44)) (result i32)
     (local $1_tmp0_subject (ref null $Kind___type_44))

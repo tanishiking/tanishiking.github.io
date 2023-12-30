@@ -1,18 +1,10 @@
 ---
-title: tanishikingdom
-type: docs
 ---
 
 ## Links
 
-- [blog](./posts)
-- [Github](https://github.com/tanishiking)
-- [Twitter](https://twitter.com/tanishiking25)
-- [Linkedin](https://www.linkedin.com/in/rikito-taniguchi-8b372b175/)
-- Japanese
-  - [Twitter (ja)](https://twitter.com/tanishiking)
-  - [tech blog (zenn)](https://zenn.dev/tanishiking)
-  - [diary (ja)](https://tanishiking24.hatenablog.com/)
+- EN [ [Github](https://github.com/tanishiking) | [Twitter](https://twitter.com/tanishiking25) | [Linkedin](https://www.linkedin.com/in/rikito-taniguchi-8b372b175/) ]
+- JP [ [Twitter](https://twitter.com/tanishiking) | [tech blog (zenn)](https://zenn.dev/tanishiking) | [diary](https://tanishiking24.hatenablog.com/) ]
 
 ## Work History and Education
 
