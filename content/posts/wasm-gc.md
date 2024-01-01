@@ -1,6 +1,6 @@
 ---
-title: 'Learn new types and instructions to be introduced in WasmGC'
-publishDate: 2024-12-20
+title: 'New types and instructions to be introduced in WasmGC'
+publishDate: 2024-01-01
 author: 'Rikito Taniguchi'
 tags:
   - webassembly
@@ -18,6 +18,8 @@ Some GC programming languages such as OCaml[^ocaml], Kotlin[^kotlin], Dart[^dart
 [^kotlin]: https://kotlinlang.org/docs/wasm-overview.html
 [^dart]: https://github.com/dart-lang/sdk/blob/5510ef63a6dcd06423305e15e2014cf20ac94699/pkg/dart2wasm/README.md
 [^j2cl]: https://github.com/google/j2cl/blob/b3ff9e233cef3e67e495476da14f13250a56c5e9/docs/getting-started-j2wasm.md
+
+We can learn the high-level view of WasmGC in the blog post by V8: [A new way to bring garbage collected programming languages efficiently to WebAssembly · V8](https://v8.dev/blog/wasm-gc-porting)
 
 However, what exactly is WasmGC? What compilers need to do to support it?
 
@@ -119,3 +121,159 @@ And each has a type hierarchy
 - `i31` is a supertype of unboxed scalars
 
 in summary
+
+![](/images/type-hierarchy.png)
+
+
+## Subtypes
+
+```lisp
+(type $A (struct)) ;; Abbreviation of `(type $A (sub (struct)))`
+(type $A (sub (struct))) ;; class A {}
+ ;; Define a type B with a field of i32, that is a subtype of A
+(type $B (sub $A (struct (field i32))))
+ ;; Define a type C with fields of i32 and i64, that is a subtype of B
+(type $C (sub final $B (struct (field i32 i64))))
+```
+
+> the preexisting syntax with no sub clause is redefined to be a shorthand for a sub clause with empty typeidx list
+
+## Abbreviations
+
+```lisp
+funcref == (ref null func)
+externref == (ref null extern)
+anyref == (ref null any)
+nullref == (ref null none)
+nullexternref == (ref null noextern)
+nullfuncref == (ref null nofunc)
+eqref == (ref null eq)
+structref == (ref null struct)
+arrayref == (ref null array)
+i31ref == (ref null i31)
+```
+
+
+## New instructions
+
+### i31.*
+
+`i31.get_u`, `i31.get_s` and so on (get_u/s are with or without sign extension)
+
+### array.* and struct.*
+
+- `array.new`, `struct.new`
+- `array.get/set`, `struct.get/set`
+- `array.len/fill/copy`
+- and more
+
+```lisp
+(type $vector (array (mut f64)))
+(type $tup (struct i64 i64 i32))
+
+;; array.new <type> <values>
+;; struct.new <type> <values>
+(local.set $v (array.new $vector (f64.const 1) (i32.const 3)))
+(local.set $t (struct.new $tup (i64.const 1) (i64.const 2) (i64.const 1)))
+
+;; array.get <type> <arrayref> <index>
+;; struct.get <type> <index> <structref>
+(array.get $vector (local.get $v) (i32.const 1)) ;; Get the 1st element of $v(0-index)
+(struct.get $tup 1 (local.get $t)) ;; $t の1番目の要素を取得
+
+;; array.set <type> <arrayref> <index> <value>
+;; struct.set <type> <index> <sturctref> <value>
+(array.set $vector (local.get $v) (i32.const 2) (i32.const 5)) ;; Set 5 to the 2nd element of $v
+(struct.set $tup 1 (local.get $t) (i64.const 100)) ;; Set 100 to the 1st field of $t
+```
+
+### br_on_*
+
+Branching based on the value of the reference type
+
+- `br_on_cast`
+  - ``(br_on_cast $label <value> <rtt>)``
+  - If the runtime type of the second argument `value` can be cast to the `rtt`, push the value of type `rtt` to the stach and branch to `$label`.
+- `br_on_cast_fail`
+  - ``(br_on_cast_fail $label <value> <rtt>)``
+  - If the `value` cannot be cast to `rtt`, branch to `$label` with `value` on the stack.
+- `br_on_null $l <value>`
+  - ``(br_on_null $l (local.get $r))``
+  - If `$r` is a null reference, branch to `$l`
+- `br_on_non_null $l`
+
+
+### ref.*
+
+casting and testing values of reference types
+
+- `ref.null ht` - create a null reference of type `ht` ``(e.g. ref.null eq)``
+- `ref.i31 $x` - create `i31ref` from `$x: i32`
+- `ref.test <ref ht> <runtime-type>`
+    - Checks if the first argument reference can be cast to the second argument runtime-type. 1 if it can, 0 if it cannot.
+- `ref.cast <ref ht> <runtime-type>`
+  - Casts the first argument reference to the second argument runtime-type.
+  - If it cannot be cast, trap
+- `ref.is_null <ref ht>`
+  - 1 if the given reference is null, 0 otherwise
+- `ref.as_non_null <ref null ht>` - make a nullable reference non-nullable? Not sure.
+- `ref.eq <ref ht> <ref ht>`
+  - Receives two `eqref` operands and performs an identity check on the values of the two references. (I haven't found any mention of specific identity checks).
+- `ref.func` - create a function reference of the given function
+
+### extern.*
+
+"converts an external value into the internal representation"
+
+- `extern.convert_any`
+- `any.convert_extern`
+
+
+## Convert between wasm and wat of wasmgc / waml
+
+### Dockerfile
+
+[tanishiking/waml-docker: Dockerfile for build and running WAML](https://github.com/tanishiking/waml-docker)
+
+```sh
+$ docker build . -t waml
+$ docker run -it waml waml -x -c
+waml 0.2 interpreter
+> val f x = x + 7;  f 5;
+...
+
+# compile waml to wasm
+$ docker run -i -v "$PWD":/data waml waml -c /data/test.waml
+
+# compile waml to wat
+$ docker run -i -v "$PWD":/data waml waml -c -x /data/test.waml
+
+# convert wat to wasm
+$ docker run -i -v "$PWD":/data waml wasm -d /data/test.wat -o /data/test.wasm
+
+# interpret wasm
+$ docker run -i -v "$PWD":/data waml wasm /data/test.wasm
+```
+
+### wasm reference interpreter
+
+There is a wasm reference interpreter in [the /interpreter directory of the WebAssembly spec](https://github.com/WebAssembly/gc/tree/main/interpreter), and with `WebAssembly/gc` you can use a reference interpreter that supports wasm gc.
+
+V8 can also run wasmgc by default, so you can run it from Deno, Node or other browsers.
+
+### waml
+
+> An experimental functional language and implementation for exploring and evaluating the Wasm GC proposal.
+
+There is also a mini ML language that can be compiled into wasmgc. It is also a good way to learn what kind of code should be converted into what kind of wasmgc code.
+
+Also, read the kotlin/wasm generated wasmgc code [Exploring WAT Files Generated from Kotlin/Wasm | Rikito Taniguchi](https://tanishiking.github.io/posts/kotlin-wasm-deep-dive/)
+
+## References
+
+- [gc/proposals/gc/Overview.md at main · WebAssembly/gc](https://github.com/WebAssembly/gc/blob/main/proposals/gc/Overview.md)
+- [gc/proposals/gc/MVP.md at main · WebAssembly/gc](https://github.com/WebAssembly/gc/blob/main/proposals/gc/MVP.md)
+- [A new way to bring garbage collected programming languages efficiently to WebAssembly · V8](https://v8.dev/blog/wasm-gc-porting)
+- [Wasm GC: What Exactly Is It (and Why I Should Care) - Ivan Mikushin, VMware - YouTube](https://www.youtube.com/watch?v=ndJP-vmZFYk)
+- [webassembly - Why do we need the type of i31 in WasmGC proposal? - Stack Overflow](https://stackoverflow.com/questions/77468063/why-do-we-need-the-type-of-i31-in-wasmgc-proposal)
+- [Bytecode Alliance — WebAssembly Reference Types in Wasmtime](https://bytecodealliance.org/articles/reference-types-in-wasmtime)
