@@ -2,3 +2,7 @@ github.com/alex-shpak/hugo-book v0.0.0-20231204233341-118997fa920e h1:vOzQO2BCcg
 github.com/alex-shpak/hugo-book v0.0.0-20231204233341-118997fa920e/go.mod h1:L4NMyzbn15fpLIpmmtDg9ZFFyTZzw87/lk7M2bMQ7ds=
 github.com/nanxiaobei/hugo-paper v0.0.0-20231107093500-3586c85b7724 h1:Xa5HSNc6hZu8p88lZsbbCkHZJdMLw9aaVKOC5Lt0BJQ=
 github.com/nanxiaobei/hugo-paper v0.0.0-20231107093500-3586c85b7724/go.mod h1:cS2hTYPgmZ2FkPTQbOiX6vB0yLQcWD067kJx2lkRPVQ=
+github.com/nodejh/hugo-theme-mini v0.0.0-20240322021354-34417888405c h1:WUFnrYHzZk6QLla2BgFvySeYORf5nf0SUzcdIANHadU=
+github.com/nodejh/hugo-theme-mini v0.0.0-20240322021354-34417888405c/go.mod h1:+Rl6qKesH3DeBOjXcmPXB1L/LwD3RqXzopTzon/jv5Q=
+github.com/tanishiking/hugo-theme-mini v0.0.0-20250911070819-572db2b6e805 h1:UDKNuNbt/pvOxcZYrCU2vkSYMVmo/7Xn+WTY7Zntdx0=
+github.com/tanishiking/hugo-theme-mini v0.0.0-20250911070819-572db2b6e805/go.mod h1:yGj8+6ZEYB3Qgsd0cD0Ttsl/HuuZ1wtNhYhLiJLywh0=

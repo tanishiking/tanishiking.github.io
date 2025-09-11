@@ -1,0 +1,6 @@
+public
+target
+themes
+.DS_Store
+.hugo_build.lockDS_store
+resources
