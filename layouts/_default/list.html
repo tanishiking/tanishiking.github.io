@@ -1,0 +1,35 @@
+{{ define "main" }}
+  <section class="container page-intro reveal" style="--stagger: 0;">
+    <h1>{{ .Title }}</h1>
+    {{ with .Content }}
+      <div class="markdown intro-content">{{ . }}</div>
+    {{ else }}
+      <p class="muted">Notes, essays, and technical writing.</p>
+    {{ end }}
+  </section>
+
+  {{ if eq .Section "posts" }}
+    {{ $paginator := .Paginate (.Pages.ByDate.Reverse) }}
+    <section class="container post-list">
+      {{ range $index, $page := $paginator.Pages }}
+        {{ partial "post-card.html" (dict "item" $page "stagger" (add $index 1)) }}
+      {{ end }}
+
+      {{ if gt $paginator.TotalPages 1 }}
+        <nav class="pagination reveal" style="--stagger: 12;" aria-label="Pagination">
+          {{ with $paginator.Prev }}
+            <a href="{{ .RelPermalink }}">← Newer</a>
+          {{ end }}
+          <span>Page {{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
+          {{ with $paginator.Next }}
+            <a href="{{ .RelPermalink }}">Older →</a>
+          {{ end }}
+        </nav>
+      {{ end }}
+    </section>
+  {{ else }}
+    <section class="container markdown reveal" style="--stagger: 1;">
+      {{ .Content }}
+    </section>
+  {{ end }}
+{{ end }}

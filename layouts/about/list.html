@@ -1,0 +1,26 @@
+{{ define "main" }}
+  <section class="container about-page">
+    <header class="page-intro reveal" style="--stagger: 0;">
+      <p class="section-label">Profile</p>
+      <h1>{{ .Title }}</h1>
+      <p class="muted">Engineer writing about compilers, tooling, and systems.</p>
+    </header>
+
+    <section class="social-panel reveal" style="--stagger: 1;" aria-label="Social links">
+      <ul>
+        {{ with .Site.Params.social.github }}<li><a href="{{ . }}">GitHub</a></li>{{ end }}
+        {{ with .Site.Params.social.twitter }}<li><a href="{{ . }}">X</a></li>{{ end }}
+        {{ with .Site.Params.social.linkedin }}<li><a href="{{ . }}">LinkedIn</a></li>{{ end }}
+      </ul>
+    </section>
+
+    <section class="social-panel reveal" style="--stagger: 2;" aria-label="Japanese links">
+      <p class="section-label" style="font-size: 0.75em;">Japanese</p>
+      <ul>
+        <li><a href="https://x.com/tanishiking">X</a></li>
+        <li><a href="https://zenn.dev/tanishiking">Zenn</a></li>
+        <li><a href="https://tanishiking24.hatenablog.com/">はてなブログ</a></li>
+      </ul>
+    </section>
+  </section>
+{{ end }}

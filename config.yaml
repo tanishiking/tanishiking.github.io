@@ -1,13 +1,8 @@
 baseURL: https://tanishiking.github.io/
 languageCode: en-us
 title: tanishiking blog
-theme: hugo-theme-mini
 pagination:
   pagerSize: 10
-
-# fork for https://github.com/nodejh/hugo-theme-mini/issues/167
-theme: 
-   - github.com/tanishiking/hugo-theme-mini
 
 hasCJKLanguage: true
 permalinks:
@@ -19,11 +14,15 @@ permalinks:
 markup:
   highlight:
     guessSyntax: true
-    style: emacs
+    style: perldoc
 
 params:
   author: tanishiking
   bio: Scala Compiler Engineer
+  tagline: Calm notes from the build room
+  home_intro: Building reliable tools with a quiet, human pace.
+  handwriting_font: Kalam
+  body_font: Newsreader
   description: Rikito Taniguchi's website
   enableRSS: false
   enableComments: false
@@ -32,5 +31,3 @@ params:
     github: https://github.com/tanishiking
     twitter: https://twitter.com/tanishiking25
     linkedin: https://www.linkedin.com/in/rikitotaniguchi/
-
-

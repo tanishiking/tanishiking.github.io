@@ -1,0 +1,16 @@
+{{ define "main" }}
+  <section class="container recent-posts">
+    <div class="section-heading reveal" style="--stagger: 0;">
+      <h2>Latest posts</h2>
+    </div>
+
+    {{ $posts := where .Site.RegularPages "Section" "posts" }}
+    {{ range $index, $post := first 5 ($posts.ByDate.Reverse) }}
+      {{ partial "post-card.html" (dict "item" $post "stagger" (add $index 1)) }}
+    {{ end }}
+
+    <p class="list-cta reveal" style="--stagger: 7;">
+      <a href="{{ "/posts/" | relLangURL }}">View all posts →</a>
+    </p>
+  </section>
+{{ end }}

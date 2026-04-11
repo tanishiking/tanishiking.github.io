@@ -1,0 +1,25 @@
+<article class="post-card reveal" style="--stagger: {{ .stagger | default 0 }};">
+  {{ with .item.Params.images }}
+    <a class="post-card-thumb" href="{{ $.item.RelPermalink }}">
+      <img src="{{ index . 0 }}" alt="{{ $.item.Title }}">
+    </a>
+  {{ end }}
+  <div class="post-card-body">
+  <h2 class="post-card-title">
+    <a href="{{ .item.RelPermalink }}">{{ .item.Title }}</a>
+  </h2>
+  <p class="post-meta">
+    <time datetime="{{ .item.Date.Format "2006-01-02" }}">{{ .item.Date.Format "January 2, 2006" }}</time>
+    {{ with .item.Params.author }}
+      <span> · {{ . }}</span>
+    {{ end }}
+  </p>
+  {{ with .item.Params.tags }}
+    <ul class="tag-list" aria-label="Post tags">
+      {{ range . }}
+        <li>{{ . }}</li>
+      {{ end }}
+    </ul>
+  {{ end }}
+  </div>
+</article>

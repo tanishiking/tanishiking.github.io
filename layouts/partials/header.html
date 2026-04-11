@@ -1,0 +1,14 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="{{ "/" | relLangURL }}">
+      <span class="brand-mark">RT</span>
+      <span class="brand-text">{{ .Site.Title }}</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="{{ "/" | relLangURL }}">Home</a>
+      <a href="{{ "/posts/" | relLangURL }}">Posts</a>
+      <a href="{{ "/about/" | relLangURL }}">About</a>
+    </nav>
+  </div>
+</header>
