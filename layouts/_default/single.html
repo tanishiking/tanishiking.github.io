@@ -14,7 +14,14 @@
       {{ end }}
     </header>
 
-    <div class="markdown content reveal" style="--stagger: 1;">
+    {{ if .TableOfContents }}
+      <nav class="toc reveal" style="--stagger: 1;" aria-label="Table of contents">
+        <p class="toc-title">Contents</p>
+        {{ .TableOfContents }}
+      </nav>
+    {{ end }}
+
+    <div class="markdown content reveal" style="--stagger: {{ if .TableOfContents }}2{{ else }}1{{ end }};">
       {{ .Content }}
     </div>
   </article>
