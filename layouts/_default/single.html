@@ -1,7 +1,6 @@
 {{ define "main" }}
   <article class="container post-article">
     <header class="post-header reveal" style="--stagger: 0;">
-      <p class="section-label">{{ .Section | title }}</p>
       <h1>{{ .Title }}</h1>
       <p class="post-meta">
         <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>

@@ -1,7 +1,7 @@
 ---
 title: "Introduction to Scala 3's Capture Checking and Separation Checking"
-publishDate: 2026-04-11
-draft: true
+publishDate: 2026-04-13
+draft: false
 author: 'Rikito Taniguchi'
 tags:
   - Scala
