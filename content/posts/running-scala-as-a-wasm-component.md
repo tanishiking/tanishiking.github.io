@@ -122,23 +122,29 @@ $ cargo install --git https://github.com/scala-wasm/wit-bindgen --tag scala-wasm
 `scala-wasm` is published under the `io.github.scala-wasm` organization. Add this to `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("io.github.scala-wasm" % "sbt-scalajs" % "1.21.1-wasm.4")
+addSbtPlugin("io.github.scala-wasm" % "sbt-scalajs" % "1.22.0-wasm.4")
 libraryDependencies += "io.github.scala-wasm" %% "scalajs-env-wasmtime" % "0.0.2"
 ```
 
-In `build.sbt`, set `scalaJSLinkerConfig`'s `moduleKind` to `WasmComponent`. Then the linker produces a Wasm Component. If there are WIT files under `scalaJSWitDirectory`, `wit-bindgen scala` runs at compile time and generates Scala bindings under `target/scala-*/src_managed`.
+In `build.sbt`, enable WebAssembly in `ESFeatures`, and set `scalaJSLinkerConfig`'s `moduleKind` to `WasmComponent`. Then the linker produces a Wasm Component. If there are WIT files under `scalaJSWitDirectory`, `wit-bindgen scala` runs at compile time and generates Scala bindings under `target/scala-*/src_managed`.
 
 ```scala
+import org.scalajs.linker.interface.ESVersion
 import org.scalajs.linker.interface.ModuleKind
 enablePlugins(ScalaJSPlugin)
 
 scalaJSWitDirectory := baseDirectory.value / "wit"
 scalaJSWitWorld := Some("world-name") // WIT world to generate
 
-scalaJSLinkerConfig ~= {
+Compile / scalaJSLinkerConfig := {
   val witDir = scalaJSWitDirectory.value
   val witWorld = scalaJSWitWorld.value
-  _.withExperimentalUseWebAssembly(true)
+  (Compile / scalaJSLinkerConfig).value
+    .withESFeatures { features =>
+      features
+        .withUseWebAssembly(true)
+        .withESVersion(ESVersion.ES2022)
+    }
     .withModuleKind(ModuleKind.WasmComponent)
     .withWasmFeatures { features =>
       // This currently needs to be passed through wasmFeatures as well.
@@ -174,6 +180,7 @@ world rust {
 First, implement the Scala component for the `scala` world.
 
 ```scala
+import org.scalajs.linker.interface.ESVersion
 import org.scalajs.linker.interface.ModuleKind
 lazy val rustComposeScala = project
   .settings(
@@ -184,7 +191,11 @@ lazy val rustComposeScala = project
     Compile / scalaJSLinkerConfig := {
       // ...
       (Compile / scalaJSLinkerConfig).value
-        .withExperimentalUseWebAssembly(true)
+        .withESFeatures { features =>
+          features
+            .withUseWebAssembly(true)
+            .withESVersion(ESVersion.ES2022)
+        }
         .withModuleKind(ModuleKind.WasmComponent)
         // ...
     }
